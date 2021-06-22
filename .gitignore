@@ -1,0 +1,5 @@
+carla-dataset/
+.ipynb_checkpoints/
+unet_model.pth
+segnet_model.pth
+resunet_model.pth
