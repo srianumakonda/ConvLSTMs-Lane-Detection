@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class UNet_Model(nn.Module):
     
-    def __init__(self, in_channels, out_channels, padding, affine, track_running_stats):
+    def __init__(self, in_channels, out_channels, affine, track_running_stats):
         
         """
         Implementation of, "U-Net: Convolutional Networks for Biomedical Image Segmentation" (Ronneberger et al., 2015)
@@ -13,8 +13,6 @@ class UNet_Model(nn.Module):
         @param:
             in_channels (int): specify the number of input channels for the image
             out_channels (int): specify the number of output channels to be released from the U-Net model
-            padding (bool): specify if padding is to be (or not) used in the U-Net implementation
-            dropout (bool): specify if dropout is to be (or not) used in the U-Net implementation
             affine (bool): specify if the U-Net model should have learnable affine parameters
             track_running_stats (bool): specify if the U-Net model should be tracking the mean and variance
             
@@ -55,31 +53,30 @@ class UNet_Model(nn.Module):
         
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.padding = 1 if padding else 0
         
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(2)
         self.upsample = nn.Upsample(scale_factor=2, mode='nearest')
         
-        self.conv1 = nn.Conv2d(in_channels, 64, 3, stride=1, padding=padding)
-        self.conv2 = nn.Conv2d(64, 64, 3, stride=1, padding=padding)
-        self.conv3 = nn.Conv2d(64, 128, 3, stride=1, padding=padding)
-        self.conv4 = nn.Conv2d(128, 128, 3, stride=1, padding=padding)
-        self.conv5 = nn.Conv2d(128, 256, 3, stride=1, padding=padding)
-        self.conv6 = nn.Conv2d(256, 256, 3, stride=1, padding=padding)
-        self.conv7 = nn.Conv2d(256, 512, 3, stride=1, padding=padding)
-        self.conv8 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.conv9 = nn.Conv2d(512, 1024, 3, stride=1, padding=padding)
-        self.conv10 = nn.Conv2d(1024, 1024, 3, stride=1, padding=padding)
+        self.conv1 = nn.Conv2d(in_channels, 64, 3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, 3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(128, 128, 3, stride=1, padding=1)
+        self.conv5 = nn.Conv2d(128, 256, 3, stride=1, padding=1)
+        self.conv6 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
+        self.conv7 = nn.Conv2d(256, 512, 3, stride=1, padding=1)
+        self.conv8 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.conv9 = nn.Conv2d(512, 1024, 3, stride=1, padding=1)
+        self.conv10 = nn.Conv2d(1024, 1024, 3, stride=1, padding=1)
         
-        self.deconv1 = nn.Conv2d(1024+512, 512, 3, stride=1, padding=padding)
-        self.deconv2 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.deconv3 = nn.Conv2d(512+256, 256, 3, stride=1, padding=padding)
-        self.deconv4 = nn.Conv2d(256, 256, 3, stride=1, padding=padding)
-        self.deconv5 = nn.Conv2d(256+128, 128, 3, stride=1, padding=padding)
-        self.deconv6 = nn.Conv2d(128, 128, 3, stride=1, padding=padding)
-        self.deconv7 = nn.Conv2d(128+64, 64, 3, stride=1, padding=padding)
-        self.deconv8 = nn.Conv2d(64, 64, 3, stride=1, padding=padding)
+        self.deconv1 = nn.Conv2d(1024+512, 512, 3, stride=1, padding=1)
+        self.deconv2 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.deconv3 = nn.Conv2d(512+256, 256, 3, stride=1, padding=1)
+        self.deconv4 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
+        self.deconv5 = nn.Conv2d(256+128, 128, 3, stride=1, padding=1)
+        self.deconv6 = nn.Conv2d(128, 128, 3, stride=1, padding=1)
+        self.deconv7 = nn.Conv2d(128+64, 64, 3, stride=1, padding=1)
+        self.deconv8 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
         self.deconv9 = nn.Conv2d(64, self.out_channels, 1, stride=1)
         
         self.in_64 = nn.InstanceNorm2d(64,affine=affine,track_running_stats=track_running_stats)
