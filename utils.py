@@ -45,11 +45,7 @@ class Decoder_Block(nn.Module):
         dec_block = self.res_block(dec_block)
         return dec_block
 
-def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice):
-
-    # iou = loss.IoULoss()
-    # if dice:
-    #     dice = loss.DiceLoss()
+def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall):
 
     outputs = []
 
@@ -63,16 +59,15 @@ def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou,
             output = model(img)
             iou_loss = iou(output, annotation)
             dice_loss = dice(output, annotation)
+            precision_met = precision(output, annotation)
+            recall_met = recall(output, annotation)
             
             optim.zero_grad()
             iou_loss.backward()
             optim.step()
             
             if (int(i+1))%(steps_per_epoch//5) == 0:
-                if dice:
-                    print(f"epoch {epoch+1}/{epochs}, step {i+1}/{steps_per_epoch}, IoU score = {1-iou_loss.item():.4f}, F1/Dice score: {1-dice_loss:.4f}")
-                else:
-                    print(f"epoch {epoch+1}/{epochs}, step {i+1}/{steps_per_epoch}, IoU score = {1-iou_loss.item():.4f}")
+                print(f"epoch {epoch+1}/{epochs}, step {i+1}/{steps_per_epoch}, IoU score = {1-iou_loss.item():.4f}, Precision = {precision_met:.4f}, Recall = {recall_met:.4f}, F1/Dice score: {dice_loss:.4f}")
 
         outputs.append((img, annotation, output))
 

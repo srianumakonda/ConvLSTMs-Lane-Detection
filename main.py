@@ -34,6 +34,8 @@ optim = torch.optim.Adam(model.parameters(),lr=lr,weight_decay=weight_decay)
 steps_per_epoch = len(carla_dataset) // batch_size
 iou = loss.IoULoss()
 dice = loss.DiceLoss()
+precision = loss.Precision()
+recall = loss.Recall()
 
-model, outputs = train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice)
+model, outputs = train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall)
 visualize_predictions(outputs,epochs,n_classes)
