@@ -45,6 +45,18 @@ class Decoder_Block(nn.Module):
         dec_block = self.res_block(dec_block)
         return dec_block
 
+def double_conv(in_channels,out_channels):
+    x = nn.Sequential(
+        nn.Conv2d(in_channels,out_channels,kernel_size=3,stride=1,padding=1),
+        nn.ReLU(),
+        nn.InstanceNorm2d(out_channels),
+        nn.Conv2d(out_channels,out_channels,kernel_size=3,stride=1,padding=1),
+        nn.ReLU(),
+        nn.InstanceNorm2d(out_channels)
+    )
+    
+    return x
+
 def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall):
 
     outputs = []
@@ -90,6 +102,32 @@ def visualize_images(img, annot,n_classes):
         plt.subplot(2, 10, 10+k+1)
         plt.title(f"Annotation for img {k+1}")
         plt.imshow(annotation,cmap="gray")
+
+    plt.show()
+
+def visualize_images_culanes(img, annot):
+
+    plt.figure(figsize=(50, 10))
+    for j in range(10):
+        if j >= 10: break
+        image = np.squeeze(img[j].cpu().numpy())
+        plt.subplot(2, 10, j+1)
+        plt.title(f"Input img for {j+1}")
+        plt.imshow(image,cmap="gray")
+
+    for k in range(10):
+        if k >= 10: break
+        annotation = np.squeeze(annot[k].cpu().numpy())
+        output = np.zeros((annotation.shape[1],annotation.shape[2],3))
+        gray = 255/4*(annotation[0]+annotation[1]*2+annotation[2]*3+annotation[3]*4)
+        output[gray==255/4] = [0,0,255]
+        output[gray==255/4*2] = [0,255,0]
+        output[gray==255/4*3] = [255,0,0]
+        output[gray==255/4*4] = [255,255,0]
+        output = output.astype(np.uint8)
+        plt.subplot(2, 10, 10+k+1)
+        plt.title(f"Annotation for img {k+1}")
+        plt.imshow(output,cmap="gray")
 
     plt.show()
 
