@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class SegNet_Model(nn.Module):
     
-    def __init__(self, in_channels, out_channels, padding, affine, track_running_stats):
+    def __init__(self, in_channels, out_channels, affine, track_running_stats):
         
         """
         Implementation of, "SegNet: A Deep Convolutional Encoder-Decoder Architecture for Image Segmentation" (Badrinarayanan et al., 2017)
@@ -32,45 +32,44 @@ class SegNet_Model(nn.Module):
         
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.padding = 1 if padding else 0
         
         self.relu = nn.ReLU()
         
-        self.conv1_1 = nn.Conv2d(in_channels, 64, 3, stride=1, padding=padding)
-        self.conv1_2 = nn.Conv2d(64, 64, 3, stride=1, padding=padding)
+        self.conv1_1 = nn.Conv2d(in_channels, 64, 3, stride=1, padding=1)
+        self.conv1_2 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
         
-        self.conv2_1 = nn.Conv2d(64, 128, 3, stride=1, padding=padding)
-        self.conv2_2 = nn.Conv2d(128, 128, 3, stride=1, padding=padding)
+        self.conv2_1 = nn.Conv2d(64, 128, 3, stride=1, padding=1)
+        self.conv2_2 = nn.Conv2d(128, 128, 3, stride=1, padding=1)
         
-        self.conv3_1 = nn.Conv2d(128, 256, 3, stride=1, padding=padding)
-        self.conv3_2 = nn.Conv2d(256, 256, 3, stride=1, padding=padding)
-        self.conv3_3 = nn.Conv2d(256, 256, 3, stride=1, padding=padding)
+        self.conv3_1 = nn.Conv2d(128, 256, 3, stride=1, padding=1)
+        self.conv3_2 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
+        self.conv3_3 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
         
-        self.conv4_1 = nn.Conv2d(256, 512, 3, stride=1, padding=padding)
-        self.conv4_2 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.conv4_3 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
+        self.conv4_1 = nn.Conv2d(256, 512, 3, stride=1, padding=1)
+        self.conv4_2 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.conv4_3 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
         
-        self.conv5_1 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.conv5_2 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.conv5_3 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
+        self.conv5_1 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.conv5_2 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.conv5_3 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
         
-        self.deconv5_3 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.deconv5_2 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.deconv5_1 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
+        self.deconv5_3 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.deconv5_2 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.deconv5_1 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
         
-        self.deconv4_3 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.deconv4_2 = nn.Conv2d(512, 512, 3, stride=1, padding=padding)
-        self.deconv4_1 = nn.Conv2d(512, 256, 3, stride=1, padding=padding)
+        self.deconv4_3 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.deconv4_2 = nn.Conv2d(512, 512, 3, stride=1, padding=1)
+        self.deconv4_1 = nn.Conv2d(512, 256, 3, stride=1, padding=1)
         
-        self.deconv3_3 = nn.Conv2d(256, 256, 3, stride=1, padding=padding)
-        self.deconv3_2 = nn.Conv2d(256, 256, 3, stride=1, padding=padding)
-        self.deconv3_1 = nn.Conv2d(256, 128, 3, stride=1, padding=padding)
+        self.deconv3_3 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
+        self.deconv3_2 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
+        self.deconv3_1 = nn.Conv2d(256, 128, 3, stride=1, padding=1)
 
-        self.deconv2_2 = nn.Conv2d(128, 128, 3, stride=1, padding=padding)
-        self.deconv2_1 = nn.Conv2d(128, 64, 3, stride=1, padding=padding)
+        self.deconv2_2 = nn.Conv2d(128, 128, 3, stride=1, padding=1)
+        self.deconv2_1 = nn.Conv2d(128, 64, 3, stride=1, padding=1)
 
-        self.deconv1_2 = nn.Conv2d(64, 64, 3, stride=1, padding=padding)
-        self.deconv1_1 = nn.Conv2d(64, out_channels, 3, stride=1, padding=padding)
+        self.deconv1_2 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
+        self.deconv1_1 = nn.Conv2d(64, out_channels, 3, stride=1, padding=1)
         
         self.in_64 = nn.InstanceNorm2d(64,affine=affine,track_running_stats=track_running_stats)
         self.in_128 = nn.InstanceNorm2d(128,affine=affine,track_running_stats=track_running_stats)
