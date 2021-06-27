@@ -60,7 +60,10 @@ def double_conv(in_channels,out_channels):
 def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall):
 
     outputs = []
-
+    highest_dice = 0.0
+    highest_iou = 0.0
+    highest_prec = 0.0
+    highest_rec = 0.0
     for epoch in range(epochs):
         print('-'*20)
         for i, (img, annotation) in enumerate(data_loader):
@@ -77,11 +80,26 @@ def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou,
             optim.zero_grad()
             iou_loss.backward()
             optim.step()
+
+            if highest_iou < 1-iou_loss.item():
+                highest_iou = 1-iou_loss.item()
+
+            if highest_dice < dice_loss:
+                highest_dice = dice_loss
+
+            if highest_prec < precision_met:
+                highest_prec = precision_met
+
+            if highest_rec < recall_met:
+                highest_rec = recall_met     
             
             if (int(i+1))%(steps_per_epoch//5) == 0:
                 print(f"epoch {epoch+1}/{epochs}, step {i+1}/{steps_per_epoch}, IoU score = {1-iou_loss.item():.4f}, Precision = {precision_met:.4f}, Recall = {recall_met:.4f}, F1/Dice score: {dice_loss:.4f}")
 
         outputs.append((img, annotation, output))
+
+    print("-"*20)
+    print(f"highest values, IoU score = {highest_iou:.4f}, Precision = {highest_prec:.4f}, Recall = {highest_rec:.4f}, F1/Dice score: {highest_dice:.4f}")
 
     return model, outputs
 
