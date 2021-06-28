@@ -5,7 +5,7 @@ from utils import double_conv
 
 class ResNet50_UNet(nn.Module):
 
-    def __init__(self,pretrained,in_channels,out_channels,affine=True,track_running_stats=True):
+    def __init__(self,pretrained,in_channels,out_channels):
 
         super(ResNet50_UNet,self).__init__()
 
@@ -25,21 +25,13 @@ class ResNet50_UNet(nn.Module):
         self.d_conv2 = double_conv(512+256,256)
         self.d_conv3 = double_conv(256+128,128)
         self.d_conv4 = double_conv(64+64,64)
-        self.conv5 = nn.Conv2d(32,out_channels,kernel_size=1)
+        self.output_conv = nn.Conv2d(32,out_channels,kernel_size=1)
 
         self.upconv1 = nn.ConvTranspose2d(2048,512,kernel_size=2,stride=2)
         self.upconv2 = nn.ConvTranspose2d(512,256,kernel_size=2,stride=2)
         self.upconv3 = nn.ConvTranspose2d(256,128,kernel_size=2,stride=2)
         self.upconv4 = nn.ConvTranspose2d(128,64,kernel_size=2,stride=2)
         self.upconv5 = nn.ConvTranspose2d(64,32,kernel_size=2,stride=2)
-
-        self.in_64 = nn.InstanceNorm2d(64,affine=affine,track_running_stats=track_running_stats)
-        self.in_128 = nn.InstanceNorm2d(128,affine=affine,track_running_stats=track_running_stats)
-        self.in_128_256 = nn.InstanceNorm2d(128+256,affine=affine,track_running_stats=track_running_stats)
-        self.in_256 = nn.InstanceNorm2d(256,affine=affine,track_running_stats=track_running_stats)
-        self.in_256_512 = nn.InstanceNorm2d(256+512,affine=affine,track_running_stats=track_running_stats)
-        self.in_512 = nn.InstanceNorm2d(512,affine=affine,track_running_stats=track_running_stats)
-        self.in_512_1024 = nn.InstanceNorm2d(2048+1024,affine=affine,track_running_stats=track_running_stats)
 
     # credit for weight_initialization: https://github.com/zhoudaxia233/PyTorch-Unet/blob/master/resnet_unet.py
     def _weights_init(self):
@@ -75,7 +67,7 @@ class ResNet50_UNet(nn.Module):
         x = self.d_conv4(x)
 
         x = self.upconv5(x)
-        x = self.conv5(x)
+        x = self.output_conv(x)
         x = torch.sigmoid(x)
         return x
 
