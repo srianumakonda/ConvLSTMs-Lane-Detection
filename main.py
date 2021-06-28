@@ -12,18 +12,19 @@ from unet import *
 from segnet import *
 from resnet50unet import *
 from resunet import *
+from vgg16unet import *
 
 torch.cuda.empty_cache()
 # device = torch.device('cpu')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 n_classes = 2
 resize = (128,128)
-epochs = 1
+epochs = 10
 batch_size = 16
 lr = 1e-3
 train_dir = "carla-dataset/train/images"
 annotation_dir = "carla-dataset/train/annotations"
-model_dir = "models/resunet.pth"
+model_dir = "models/vgg16unet.pth"
 
 carla_dataset = CarlaDataset(train_dir,annotation_dir,resize=resize)
 # culanes_dataset = CuLanesDataset(train_dir,annotation_dir,5,resize)
@@ -32,8 +33,8 @@ data_loader = DataLoader(carla_dataset, batch_size=batch_size, shuffle=False)
 # print(f"dataset length: {len(carla_dataset)} \nimg shape: {img.shape}, annotations shape: {annot.shape}")
 # visualize_images(img,annot,n_classes)
 
-model = UNet_Model(in_channels=1,out_channels=n_classes,affine=True,track_running_stats=True).to(device)
-# model = ResNet50_UNet(pretrained=True,in_channels=1,out_channels=n_classes,affine=True,track_running_stats=True).to(device)
+# model = UNet_Model(in_channels=1,out_channels=n_classes,affine=True,track_running_stats=True).to(device)
+model = VGG16_UNet(pretrained=False,in_channels=1,out_channels=n_classes).to(device)
 # summary(model,(1,resize[0],resize[1]))
 
 optim = adabound.AdaBound(model.parameters(), lr=lr, final_lr=0.1)
@@ -44,6 +45,6 @@ precision = loss.Precision()
 recall = loss.Recall()
 
 model, outputs = train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall)
-# torch.save(model.state_dict(),model_dir)
-# print("Model saved")
-# visualize_predictions(outputs,epochs,n_classes)
+torch.save(model.state_dict(),model_dir)
+print("Model saved")
+visualize_predictions(outputs,epochs,n_classes)
