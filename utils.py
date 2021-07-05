@@ -21,9 +21,9 @@ class Residual_Block(nn.Module):
 
     def forward(self, x):
         
-        res_block = self.in_1(self.relu(x))
+        res_block = self.relu(self.in_1(x))
         res_block = self.conv1(res_block)
-        res_block = self.in_2(self.relu(res_block))
+        res_block = self.relu(self.in_2(res_block))
         res_block = self.conv2(res_block)
         s = self.skip_conv(x)
         skip = res_block + s
@@ -48,16 +48,16 @@ class Decoder_Block(nn.Module):
 def double_conv(in_channels,out_channels):
     x = nn.Sequential(
         nn.Conv2d(in_channels,out_channels,kernel_size=3,stride=1,padding=1),
-        nn.ReLU(),
         nn.InstanceNorm2d(out_channels),
-        nn.Conv2d(out_channels,out_channels,kernel_size=3,stride=1,padding=1),
         nn.ReLU(),
-        nn.InstanceNorm2d(out_channels)
+        nn.Conv2d(out_channels,out_channels,kernel_size=3,stride=1,padding=1),
+        nn.InstanceNorm2d(out_channels),
+        nn.ReLU()   
     )
     
     return x
 
-def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall):
+def train_model(model, data_loader, val_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall):
 
     outputs = []
     highest_dice = 0.0
@@ -67,7 +67,6 @@ def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou,
     for epoch in range(epochs):
         print('-'*20)
         for i, (img, annotation) in enumerate(data_loader):
-            
             img = img.to(device)
             annotation = annotation.to(device)
             
@@ -91,11 +90,24 @@ def train_model(model, data_loader, epochs, steps_per_epoch, device, optim, iou,
                 highest_prec = precision_met
 
             if highest_rec < recall_met:
-                highest_rec = recall_met     
+                highest_rec = recall_met    
             
             if (int(i+1))%(steps_per_epoch//5) == 0:
                 print(f"epoch {epoch+1}/{epochs}, step {i+1}/{steps_per_epoch}, IoU score = {1-iou_loss.item():.4f}, Precision = {precision_met:.4f}, Recall = {recall_met:.4f}, F1/Dice score: {dice_loss:.4f}")
 
+        model.eval()
+        for img, annotation in val_loader:
+            img = img.to(device)
+            annotation = annotation.to(device)
+
+            output = model(img)
+            iou_loss = iou(output, annotation)
+            dice_loss = dice(output, annotation)
+            precision_met = precision(output, annotation)
+            recall_met = recall(output, annotation)
+
+        print(f"validation loss: IoU score = {1-iou_loss.item():.4f}, Precision = {precision_met:.4f}, Recall = {recall_met:.4f}, F1/Dice score: {dice_loss:.4f}")
+        
         outputs.append((img, annotation, output))
 
     print("-"*20)
