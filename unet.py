@@ -87,44 +87,44 @@ class UNet_Model(nn.Module):
         
     def forward(self, x):
         
-        conv_block_1 = self.in_64(F.relu(self.conv1(x)))
-        conv_block_1 = self.in_64(F.relu(self.conv2(conv_block_1)))
+        conv_block_1 = F.relu(self.in_64(self.conv1(x)))
+        conv_block_1 = F.relu(self.in_64(self.conv2(conv_block_1)))
         conv_block_1_max = self.maxpool(conv_block_1)
         
-        conv_block_2 = self.in_128(F.relu(self.conv3(conv_block_1_max)))
-        conv_block_2 = self.in_128(F.relu(self.conv4(conv_block_2)))
+        conv_block_2 = F.relu(self.in_128(self.conv3(conv_block_1_max)))
+        conv_block_2 = F.relu(self.in_128(self.conv4(conv_block_2)))
         conv_block_2_max = self.maxpool(conv_block_2)
         
-        conv_block_3 = self.in_256(F.relu(self.conv5(conv_block_2_max)))
-        conv_block_3 = self.in_256(F.relu(self.conv6(conv_block_3)))
+        conv_block_3 = F.relu(self.in_256(self.conv5(conv_block_2_max)))
+        conv_block_3 = F.relu(self.in_256(self.conv6(conv_block_3)))
         conv_block_3_max = self.maxpool(conv_block_3)
         
-        conv_block_4 = self.in_512(F.relu(self.conv7(conv_block_3_max)))
-        conv_block_4 = self.in_512(F.relu(self.conv8(conv_block_4)))
+        conv_block_4 = F.relu(self.in_512(self.conv7(conv_block_3_max)))
+        conv_block_4 = F.relu(self.in_512(self.conv8(conv_block_4)))
         conv_block_4_max = self.maxpool(conv_block_4)
         
-        conv_block_5 = self.in_1024(F.relu(self.conv9(conv_block_4_max)))
-        conv_block_5 = self.in_1024(F.relu(self.conv10(conv_block_5)))
+        conv_block_5 = F.relu(self.in_1024(self.conv9(conv_block_4_max)))
+        conv_block_5 = F.relu(self.in_1024(self.conv10(conv_block_5)))
         
         upconv_block_1 = self.in_1024(self.upsample(conv_block_5))
         upconv_block_1 = torch.cat([upconv_block_1, conv_block_4], dim=1)
-        upconv_block_1 = self.in_512(F.relu(self.deconv1(upconv_block_1)))
-        upconv_block_1 = self.in_512(F.relu(self.deconv2(upconv_block_1)))
+        upconv_block_1 = F.relu(self.in_512(self.deconv1(upconv_block_1)))
+        upconv_block_1 = F.relu(self.in_512(self.deconv2(upconv_block_1)))
         
         upconv_block_2 = self.in_512(self.upsample(upconv_block_1))
         upconv_block_2 = torch.cat([upconv_block_2, conv_block_3], dim=1)
-        upconv_block_2 = self.in_256(F.relu(self.deconv3(upconv_block_2)))
-        upconv_block_2 = self.in_256(F.relu(self.deconv4(upconv_block_2)))
+        upconv_block_2 = F.relu(self.in_256(self.deconv3(upconv_block_2)))
+        upconv_block_2 = F.relu(self.in_256(self.deconv4(upconv_block_2)))
         
         upconv_block_3 = self.in_256(self.upsample(upconv_block_2))
         upconv_block_3 = torch.cat([upconv_block_3, conv_block_2], dim=1)
-        upconv_block_3 = self.in_128(F.relu(self.deconv5(upconv_block_3)))
-        upconv_block_3 = self.in_128(F.relu(self.deconv6(upconv_block_3)))
+        upconv_block_3 = F.relu(self.in_128(self.deconv5(upconv_block_3)))
+        upconv_block_3 = F.relu(self.in_128(self.deconv6(upconv_block_3)))
 
         upconv_block_4 = self.in_128(self.upsample(upconv_block_3))
         upconv_block_4 = torch.cat([upconv_block_4, conv_block_1], dim=1)
-        upconv_block_4 = self.in_64(F.relu(self.deconv7(upconv_block_4)))
-        upconv_block_4 = self.in_64(F.relu(self.deconv8(upconv_block_4)))
+        upconv_block_4 = F.relu(self.in_64(self.deconv7(upconv_block_4)))
+        upconv_block_4 = F.relu(self.in_64(self.deconv8(upconv_block_4)))
         
         out = self.deconv9(upconv_block_4)
         out = torch.sigmoid(out)
