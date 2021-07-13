@@ -3,7 +3,5 @@ CULanes/
 .ipynb_checkpoints/
 __pycache__/
 ipynb notebooks/
-models/
-Proposal.docx
-Proposal.pdf
-Tracking.docx
+saved_models/
+word_documents/

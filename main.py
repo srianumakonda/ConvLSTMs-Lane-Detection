@@ -4,15 +4,9 @@ from torch.utils.data import DataLoader
 import torchvision.models as models
 from torchsummary import summary
 import matplotlib.pyplot as plt
-from preprocess import *
-from utils import *
-import loss
 
-from unet import *
-from segnet import *
-from resnet50unet import *
-from resunet import *
-from vgg16unet import *
+from models import *
+from utils import *
 
 torch.cuda.empty_cache()
 device = torch.device('cpu')
@@ -43,10 +37,10 @@ model = UNet_Model(in_channels=1,out_channels=n_classes,affine=True,track_runnin
 
 optim = adabound.AdaBound(model.parameters(), lr=lr, final_lr=0.1)
 steps_per_epoch = len(carla_dataset) // batch_size
-iou = loss.IoULoss()
-dice = loss.DiceLoss()
-precision = loss.Precision()
-recall = loss.Recall()
+iou = IoULoss()
+dice = DiceLoss()
+precision = Precision()
+recall = Recall()
 
 model, outputs = train_model(model, data_loader, val_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall)
 # torch.save(model.state_dict(),model_dir)
