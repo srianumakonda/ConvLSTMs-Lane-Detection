@@ -7,7 +7,6 @@ import numpy as np
 class Residual_Block(nn.Module):
     
     def __init__(self, in_channels, out_channels, stride, affine, track_running_stats):
-        
         super(Residual_Block, self).__init__()
         
         self.relu = nn.ReLU()
@@ -32,7 +31,6 @@ class Residual_Block(nn.Module):
 class Decoder_Block(nn.Module):
     
     def __init__(self, in_channels, out_channels, affine, track_running_stats):
-        
         super(Decoder_Block, self).__init__()
 
         self.upsample = nn.Upsample(scale_factor=2, mode="bilinear", align_corners=True)
@@ -45,17 +43,64 @@ class Decoder_Block(nn.Module):
         dec_block = self.res_block(dec_block)
         return dec_block
 
-def double_conv(in_channels,out_channels):
-    x = nn.Sequential(
-        nn.Conv2d(in_channels,out_channels,kernel_size=3,stride=1,padding=1),
-        nn.InstanceNorm2d(out_channels),
-        nn.ReLU(),
-        nn.Conv2d(out_channels,out_channels,kernel_size=3,stride=1,padding=1),
-        nn.InstanceNorm2d(out_channels),
-        nn.ReLU()   
-    )
+class double_conv(nn.Module):
+
+    def __init__(self, in_channels,out_channels,kernel_size=3,stride=1,padding=1,maxpool=False):
+        super(double_conv,self).__init__()
+
+        self.double_conv = nn.Sequential(
+            nn.Conv2d(in_channels,out_channels,kernel_size=kernel_size,stride=stride,padding=padding),
+            nn.InstanceNorm2d(out_channels),
+            nn.ReLU(),
+            nn.Conv2d(out_channels,out_channels,kernel_size=kernel_size,stride=stride,padding=padding),
+            nn.InstanceNorm2d(out_channels),
+            nn.ReLU()   
+        )
+
+    def forward(self, x):
+
+        x = self.double_conv(x)
+        return x
+
+class max_down(nn.Module):
+
+    def __init__(self, in_channels, out_channels):
+        super(max_down,self).__init__()
+
+        self.max_down = nn.Sequential(
+            nn.MaxPool2d(2),
+            double_conv(in_channels,out_channels)
+        )
+
+    def forward(self, x):
+
+        x = self.max_down(x)
+        return x
+
+class upsample(nn.Module):
     
-    return x
+    def __init__(self, in_channels, out_channels, bilinear=True):
+        super(upsample,self).__init__()
+
+        if bilinear:
+            self.upsample = nn.UpsamplingBilinear2d(scale_factor=2)
+        else:
+            self.upsample = nn.ConvTranspose2d(in_channels//2, in_channels//2, kernel_size=2, stride=2)
+        
+        self.conv = double_conv(in_channels, out_channels)
+    
+    def forward(self, x1, x2):
+
+        x1 = self.upsample(x1)
+        diffX = x1.size()[2] - x2.size()[2]
+        diffY = x1.size()[3] - x2.size()[3]
+        x2 = F.pad(x2, (diffX // 2, int(diffX / 2),
+                        diffY // 2, int(diffY / 2)))
+        
+        out = torch.cat([x2, x1], dim=1)
+        out = self.conv(out)
+        return out
+
 
 def train_model(model, data_loader, val_loader, epochs, steps_per_epoch, device, optim, iou, dice, precision, recall):
 
