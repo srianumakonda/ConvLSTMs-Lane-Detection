@@ -1,4 +1,3 @@
-from utils.convlstm import ConvLSTM
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,7 +10,7 @@ class UNetConvLSTM(nn.Module):
         """
         @param:
             in_channels (int): specify the number of input channels for the image
-            out_channels (int): specify the number of output channels to be released from the U-Net model
+            out_channels (int): specify the number of output channels to be released from the model
             input dim (int): specify the input dimension for the ConvLSTM layer
             n_layers (int): specify the amount of ConvLSTM layers to be placed
             loc (str): specify whether the ConvLSTM is to be placed as bridge between the encoder and decoder or at the end
@@ -38,8 +37,8 @@ class UNetConvLSTM(nn.Module):
         
     def forward(self, x):
 
+        x  = torch.unbind(x, dim=1)
         if self.loc == "bridge":
-            x  = torch.unbind(x, dim=1)
             data = []
             for i in x:
                 x1 = self.down1(i)
@@ -60,7 +59,6 @@ class UNetConvLSTM(nn.Module):
             return out  
 
         elif self.loc == "end":
-            x  = torch.unbind(x, dim=1)
             data = []
             for i in x:
                 x1 = self.down1(i)
