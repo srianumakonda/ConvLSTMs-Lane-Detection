@@ -4,7 +4,6 @@ from torch.utils.data import DataLoader
 import torchvision.models as models
 from torchsummary import summary
 import matplotlib.pyplot as plt
-
 from convlstm_models import *
 from models import *
 from utils import *
@@ -34,14 +33,14 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 # visualize_images(img,annot,n_classes)
 
 # remember: input_dim = 2 if loc="end" or input_dim = 512 if loc = "bridge"
-model = UNetConvLSTM(in_channels=in_channels,out_channels=n_classes,input_dim=512,n_layers=2,loc="bridge").to(device)
-# model = UNet_Model(in_channels=1,out_channels=n_classes,affine=True,track_running_stats=True).to(device)
+# model = VGG16UNetLSTM(in_channels=in_channels,out_channels=n_classes,input_dim=2,n_layers=2,loc="end").to(device)
+model = VGG16UNet(in_channels=in_channels,out_channels=n_classes).to(device)
 # model = VGG16_UNet(pretrained=False,in_channels=1,out_channels=n_classes).to(device)
-# summary(model,(5,in_channels,resize[0],resize[1]),device="cpu")
+summary(model,(in_channels,resize[0],resize[1]),device="cpu")
 
 #TODO: WHEN NEW DATASET COMES, MAKE SURE TO PREPROCESS IT SO THAT IT CAN BE SET TO THE AMOUNT OF PROPER SEQUENCES. REFER TO 
 # https://github.com/qinnzou/Robust-Lane-Detection/blob/master/LaneDetectionCode/dataset.py 
-print(model(torch.randn(2,5,in_channels,128,128)).shape) #b, t, c, h, w
+# print(model(torch.randn(16,5,in_channels,128,128)).shape) #b, t, c, h, w
 
 # optim = adabound.AdaBound(model.parameters(), lr=lr, final_lr=0.1)
 # steps_per_epoch = len(carla_dataset) // batch_size
